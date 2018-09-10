@@ -8,7 +8,13 @@ import Control.Applicative
 import Data.Word
 import Data.Time
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as C8
 import qualified Data.Maybe as Maybe
+
+import Data.String as S
+import Data.Char (toLower)
+import qualified Data.Monoid as Monoid
+import qualified Data.Foldable as Foldable
 
 import qualified Merge as M
 
@@ -119,6 +125,23 @@ mostSold xs = Just $ foldr1 (\p1 p2 -> maxBy (compare (snd p1) (snd p2)) p1 p2) 
 sales :: Log -> Sales
 sales = foldr (addSale . entryProduct) []
 
+---- Rendering data ----
+sepChar :: Char
+sepChar = ','
+
+renderIP :: IP -> B.ByteString
+renderIP (IP a b c d) = 
+    S.fromString $ (show a) ++ "." ++ (show b) ++ "." ++ (show c) ++ "." ++ (show d)
+
+renderEntry :: LogEntry -> B.ByteString
+renderEntry (LogEntry time ip product source) = 
+    S.fromString $ (show time) ++ "," ++ (C8.unpack $ renderIP ip) ++ "," ++ (show product) ++ 
+                   "," ++ (show source)
+
+renderLog :: Log -> B.ByteString
+renderLog [] = S.fromString ""
+renderLog (x:xs) = B.concat $ [renderEntry x, S.fromString "\n", renderLog xs]
+
 -------------------------------
 logFile :: FilePath
 logFile = "selling.log"
@@ -138,3 +161,6 @@ main = do
     print $ sales logs
     print "The most sale is: "
     print $ mostSold $ sales logs
+    print "List of products in CSV:"
+    -- mapM_ (print . renderEntry) logs
+    B.putStrLn $ renderLog logs
