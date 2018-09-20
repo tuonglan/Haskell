@@ -148,6 +148,8 @@ logFile = "selling.log"
 logFile2 :: FilePath
 logFile2 = "selling2.log"
 
+csvFile :: FilePath
+csvFile = "selling.csv"
 
 main :: IO ()
 main = do
@@ -164,3 +166,5 @@ main = do
     print "List of products in CSV:"
     -- mapM_ (print . renderEntry) logs
     B.putStrLn $ renderLog logs
+    print "Writing logs to csv file..."
+    B.writeFile csvFile $ renderLog logs
